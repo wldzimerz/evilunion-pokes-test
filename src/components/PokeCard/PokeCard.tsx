@@ -1,9 +1,9 @@
-import { PokemonData } from '../../App';
+import { PokemonData } from '../../services/request';
 
 import s from './PokeCard.module.scss';
 
 type Props = {
-  activePokemon: PokemonData | undefined;
+  activePokemon: PokemonData;
 };
 
 const PokeCard = ({ activePokemon }: Props) => {
@@ -11,7 +11,7 @@ const PokeCard = ({ activePokemon }: Props) => {
     <div className={s.wrapper}>
       <div className={s.name}>{activePokemon?.name}</div>
       <div className={s.photo}>
-        <img src={activePokemon && activePokemon.sprites && activePokemon.sprites.front_default} alt='pokemon_image' />
+        <img src={activePokemon?.sprites?.front_default} alt='pokemon_image' />
       </div>
       <div className={s.spec}>
         <p>{`Снялся в ${activePokemon?.moves?.length} сериях`}</p>

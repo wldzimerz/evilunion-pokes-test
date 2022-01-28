@@ -1,43 +1,32 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
-import request from './services/request';
+import request, { PokemonData, Pokemon } from './services/request';
 
-import Chip from '@mui/material/Chip';
 import PokeCard from './components/PokeCard/PokeCard';
+import Button from './components/Button/Button';
 
 import icon from './assets/Icon.png';
 import s from './App.module.scss';
 
-interface Src {
-  front_default: string;
-}
-export interface PokemonData {
-  name: string;
-  id: number;
-  base_experience: number;
-  height: number;
-  moves?: object[];
-  sprites?: Src;
-}
-
 function App() {
-  let [pokemons, setPokemons] = useState<any[]>([]);
-  let [selectedPokemon, setSelectedPokemon] = useState<PokemonData>();
+  const [pokemons, setPokemons] = useState<Pokemon[]>([]);
+  const [selectedPokemon, setSelectedPokemon] = useState<PokemonData>();
+
+  const getPokemons = useCallback(async () => {
+    const randomOffset = Math.floor(Math.random() * (250 - 1) + 1);
+    const { data } = await request.getPokemonsData(randomOffset);
+    setPokemons(data.results);
+  }, []);
 
   useEffect(() => {
-    const randomOffset = Math.floor(Math.random() * (250 - 1) + 1);
-    request.getPokemons(randomOffset).then((res) => {
-      setPokemons(res.data.results);
-    });
+    getPokemons();
   }, []);
-  console.log('pokemons: ', pokemons);
 
-  const handleChipClick = (url: string) => {
-    request.getSelectedPokemon(url).then((res) => {
-      setSelectedPokemon(res.data);
-    });
-  };
-  console.log('selectedPokemon: ', selectedPokemon?.name);
+  const handleChipClick = useCallback(async (url: string) => {
+    const { data } = await request.getSelectedPokemon(url);
+
+    setSelectedPokemon(data);
+  }, []);
 
   return (
     <div className={s.container}>
@@ -50,23 +39,15 @@ function App() {
       </header>
       <main className={s.main}>
         <div className={s.pokemonButtons}>
-          {pokemons &&
-            pokemons.map((pokemon, index) => {
-              return (
-                <Chip
-                  clickable
-                  label={pokemon.name}
-                  color='primary'
-                  onClick={() => {
-                    handleChipClick(pokemon.url);
-                  }}
-                  key={index}
-                  sx={{ boxSizing: 'border-box', fontSize: '20px', fontFamily: '"Raleway", sans-serif', margin: '3px 5px', padding: '20px' }}
-                />
-              );
-            })}
+          {pokemons?.map(({ name, url }) => {
+            return <Button onChipClick={handleChipClick} name={name} url={url} key={url} />;
+          })}
         </div>
-        <div className={s.card}>{selectedPokemon && <PokeCard activePokemon={selectedPokemon} />}</div>
+        {selectedPokemon && (
+          <div className={s.card}>
+            <PokeCard activePokemon={selectedPokemon} />
+          </div>
+        )}
       </main>
     </div>
   );
