@@ -20,7 +20,7 @@ function App() {
 
   useEffect(() => {
     getPokemons();
-  }, []);
+  }, [getPokemons]);
 
   const handleChipClick = useCallback(async (url: string) => {
     const { data } = await request.getSelectedPokemon(url);
